@@ -1,3 +1,3 @@
 # DevOps
-##Install vagrant
+#Install vagrant
 brew install hashicorp/tap/hashicorp-vagrant

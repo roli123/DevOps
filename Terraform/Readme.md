@@ -58,7 +58,6 @@ This command removes all resources defined in the configuration.
 To find Terraform code examples for AWS, you can search for **"Terraform AWS"** on:
 - [Terraform Registry](https://registry.terraform.io/)
 - [HashiCorp Documentation](https://developer.hashicorp.com/terraform/)
-- GitHub repositories and Terraform community forums
 
 By following these steps, Terraform enables efficient infrastructure management, reducing manual intervention and ensuring infrastructure consistency across environments.
 

@@ -68,5 +68,37 @@ terraform validate
 terraform plan -out "main.tf"
 terraform apply "main.tf"
 ```
+<<<<<<< HEAD
+=======
+This command checks for syntax errors and potential issues in the `.tf` files.
+
+### 4. **Preview Execution Plan**
+To see what actions Terraform will take without applying changes, use:
+```bash
+terraform plan
+```
+This command outputs a detailed plan of the resources that will be created, updated, or destroyed.
+
+### 5. **Apply Changes**
+To execute the plan and create/update resources as defined in the configuration, use:
+```bash
+terraform apply
+```
+Terraform will prompt for confirmation before making changes. To proceed without confirmation, use the `-auto-approve` flag.
+
+### 6. **Destroy Infrastructure**
+If resources need to be removed, Terraform provides an easy way to destroy all managed infrastructure:
+```bash
+terraform destroy
+```
+This command removes all resources defined in the configuration.
+
+## Finding Terraform Code for AWS
+To find Terraform code examples for AWS, you can search for **"Terraform AWS"** on:
+- [Terraform Registry](https://registry.terraform.io/)
+- [HashiCorp Documentation](https://developer.hashicorp.com/terraform/)
+
+By following these steps, Terraform enables efficient infrastructure management, reducing manual intervention and ensuring infrastructure consistency across environments.
+>>>>>>> 51a82a357571b14f1bfc401461bb4b7c2ba21843
 
 This completes the setup and deployment of Azure resources using Terraform.

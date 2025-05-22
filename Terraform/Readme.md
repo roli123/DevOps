@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Terraform is an open-source infrastructure-as-code (IaC) tool written in Go language and uses HashiCorp Configuration Language (HCL), which is declarative. Terraform allows users to provision and manage infrastructure across multiple cloud providers like AWS, Azure, and Google Cloud Platform (GCP). The latest version of Terraform is **1.12.0**
+Terraform is an open-source infrastructure-as-code (IaC) tool written in Go language and uses HashiCorp Configuration Language (HCL), which is declarative. Terraform allows users to provision and manage infrastructure across multiple cloud providers like AWS, Azure, and Google Cloud Platform (GCP). The latest version of Terraform is **1.12.1**
 
 ## Terraform Workflow
 
@@ -142,3 +142,41 @@ Once the role has been assigned to the application:
 > **Note:** Creating all these resources at once may cause errors due to dependency order. For example, the storage account must exist before creating a container or blob. Use Terraform's built-in dependency management or the `depends_on` attribute to manage order.
 
 > **Note:** *Blob* stands for *Binary Large Object*.
+
+## Terraform depends\_on Meta Argument
+
+Terraform manages resource creation order through **dependencies**, which come in two forms:
+
+### Types of Dependencies:
+
+* **Implicit Dependency**: Happens when one resource refers to another directly.
+
+  ```hcl
+  location = azurerm_resource_group.rg.location
+  ```
+
+* **Explicit Dependency**: Declared manually using the `depends_on` meta-argument.
+
+  ```hcl
+  resource_group_name = "myrg"
+  depends_on = [azurerm_resource_group.rg]
+  ```
+
+### When to Use `depends_on`:
+
+1. When resources **must be created in a specific order**.
+2. When a resource takes **a long time to become fully available**.
+3. When you're using **external resources** (e.g., DNS, APIs), and want to ensure another resource is created only **after the first is reachable**.
+
+### Limit Usage:
+
+Use `depends_on` **only when there’s no other viable implicit reference**, as Terraform automatically manages most dependencies.
+
+Now that `depends_on` has been added in each dependent block in your `main.tf` file, you can execute:
+
+```bash
+terraform plan -out main.tfplan
+terraform apply main.tfplan
+```
+
+> **Note:** The `-out` flag in the `terraform plan` command locks the plan to a specific set of changes. This ensures that when `terraform apply` is run with the saved plan (e.g., `main.tfplan`), it only applies the planned changes. Without using `-out`, `terraform apply` re-executes the planning phase and may detect new changes that were not part of the original plan.

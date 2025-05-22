@@ -28,12 +28,14 @@ resource "azurerm_storage_account" "storage" {
   location                 = "West Europe"
   account_tier             = "Standard"
   account_replication_type = "LRS"
+  depends_on = [ azurerm_resource_group.rg ]
 }
 
 resource "azurerm_storage_container" "container" {
   name                  = "container1"
   storage_account_id    = azurerm_storage_account.rg.id
   container_access_type = "container"
+  depends_on = [ azurerm_storage_account.storage ]
 } 
 
 resource "azurerm_storage_blob" "blob" {
@@ -42,4 +44,5 @@ resource "azurerm_storage_blob" "blob" {
   storage_container_name = "container1"
   type                   = "Block"
   source                 = "main.tf"
+  depends_on = [ azurerm_storage_container.container ]
 }

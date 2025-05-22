@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Terraform is an open-source infrastructure-as-code (IaC) tool written in Go language and uses HashiCorp Configuration Language (HCL), which is declarative. Terraform allows users to provision and manage infrastructure across multiple cloud providers like AWS, Azure, and Google Cloud Platform (GCP). The latest version of Terraform is **1.10.5**.
+Terraform is an open-source infrastructure-as-code (IaC) tool written in Go language and uses HashiCorp Configuration Language (HCL), which is declarative. Terraform allows users to provision and manage infrastructure across multiple cloud providers like AWS, Azure, and Google Cloud Platform (GCP). The latest version of Terraform is **1.12.0**
 
 ## Terraform Workflow
 
@@ -104,17 +104,41 @@ Once the role has been assigned to the application:
 6. Copy the sample code provided for creating a resource group.
 7. Paste this code into your `main.tf` file to define a resource group.
 
-### Terraform Execution Steps
+## Creating Azure Storage Account, Container, and Uploading Data
 
-> **Note:** Normally, `terraform apply` re-runs the planning phase and could detect new changes in your infrastructure since the last plan.
->
-> Using `terraform plan -out=planfile` saves a binary plan file that captures the exact set of actions to perform. When you run `terraform apply planfile`, Terraform skips the planning phase and applies **only** the saved plan, ensuring consistency and avoiding unexpected changes.
+1. Visit the [Terraform Registry](https://registry.terraform.io/) → Select **Azure** Provider → Click on **Documentation**.
+2. In the search/filter bar, type `azurerm_storage_blob`.
+3. You’ll find example code for creating storage resources: `azurerm_storage_account`, `azurerm_storage_container`, and `azurerm_storage_blob`.
+4. Add this code **after** the resource group block in your `main.tf` file.
 
-```bash
-terraform init
-terraform validate
-terraform plan -out "main.tf"
-terraform apply "main.tf"
-```
+### Configure Storage Account
 
-This completes the setup and deployment of Azure resources using Terraform.
+* Assign a reference name (e.g., `storage`).
+* Use a globally unique name (e.g., `mystorageaccount1234`).
+* Use the same `resource_group_name` and `location` as the resource group.
+
+### Configure Storage Container
+
+* Assign a reference name (e.g., `container`).
+* Define a `name`.
+* Set `storage_account_id`:
+
+  * Go to Azure Portal → Select the created storage account.
+  * Click on **JSON View** at the top-right.
+  * Copy the `resource ID` and paste it in `storage_account_id`.
+* Set `container_access_type` to `container`.
+
+### Configure Storage Blob
+
+* Assign a reference name (e.g., `blob`).
+* Set `name` as the file you want to upload.
+* Provide:
+
+  * `storage_account_name`
+  * `storage_container_name`
+  * `type` = `Block`
+  * `source` = the file to upload (e.g., `main.tf`)
+
+> **Note:** Creating all these resources at once may cause errors due to dependency order. For example, the storage account must exist before creating a container or blob. Use Terraform's built-in dependency management or the `depends_on` attribute to manage order.
+
+> **Note:** *Blob* stands for *Binary Large Object*.

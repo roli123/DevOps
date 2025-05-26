@@ -1,7 +1,3 @@
-Here's a concise note based on your input:
-
----
-
 **Note: Network Interface and Public IP in Azure**
 
 * A **Network Interface Card (NIC)** depends on the **subnet** it is associated with.

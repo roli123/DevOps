@@ -180,3 +180,5 @@ terraform apply main.tfplan
 ```
 
 > **Note:** The `-out` flag in the `terraform plan` command locks the plan to a specific set of changes. This ensures that when `terraform apply` is run with the saved plan (e.g., `main.tfplan`), it only applies the planned changes. Without using `-out`, `terraform apply` re-executes the planning phase and may detect new changes that were not part of the original plan.
+
+### The Final code is in VM directory with all resource block that are needed to create VM

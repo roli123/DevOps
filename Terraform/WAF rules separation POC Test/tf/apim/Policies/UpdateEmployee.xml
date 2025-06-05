@@ -1,0 +1,52 @@
+<!--
+    - Policies are applied in the order they appear.
+    - Position <base/> inside a section to inherit policies from the outer scope.
+    - Comments within policies are not preserved.
+-->
+<!-- Add policies as children to the <inbound>, <outbound>, <backend>, and <on-error> elements -->
+<policies>
+    <!-- Throttle, authorize, validate, cache, or transform the requests -->
+    <inbound>
+        <check-header name="User-Id" failed-check-httpcode="400" failed-check-error-message="User-Id header missing" ignore-case="true" />
+        <!-- Determine user identity -->
+        <set-variable name="userid" value="@(context.Request.Headers.GetValueOrDefault("User-Id",""))" />
+		<!-- Determine employee identity -->
+        <set-variable name="employeeid" value="@(context.Request.Body.As<JObject>(preserveContent: true)["id"])" />
+        <!--Look for the employee for this user in the cache -->
+        <cache-lookup-value key="@("userprofilecache-" + context.Variables["userid"] + "-" + context.Variables["employeeid"])" variable-name="userprofilecachevar" />
+        <!-- If API Management find it in the cache, remove it -->
+        <choose>
+            <when condition="@(context.Variables.ContainsKey("userprofilecachevar"))">
+                <trace source="cachetrace" severity="information">
+                    <message>Cache Hit</message>
+                    <metadata name="Operation Name" value="UpdateEmployee" />
+                </trace>
+                <cache-remove-value key="@("userprofilecache-" + context.Variables["userid"] + "-" + context.Variables["employeeid"])" />
+            </when>
+            <otherwise>
+                <trace source="cachetrace" severity="information">
+                    <message>Cache Miss</message>
+                    <metadata name="Operation Name" value="UpdateEmployee" />
+                </trace>
+            </otherwise>
+        </choose>
+        <base />
+    </inbound>
+    <!-- Control if and how the requests are forwarded to services  -->
+    <backend>
+        <base />
+    </backend>
+    <!-- Customize the responses -->
+    <outbound>
+		<!-- Store backend response to cache -->
+        <set-variable name="responseValue" value="@(context.Response.Body.As<string>(preserveContent: true))" />
+        <cache-store-value key="@("userprofilecache-" + context.Variables["userid"] + "-" + context.Variables["employeeid"])" value="@((string)context.Variables["responseValue"])" duration="100000" />
+        <!-- Remove common cache cache tu pull latest updated collection -->
+        <cache-remove-value key="@("allemployeescache")" />
+        <base />
+    </outbound>
+    <!-- Handle exceptions and customize error responses  -->
+    <on-error>
+        <base />
+    </on-error>
+</policies>

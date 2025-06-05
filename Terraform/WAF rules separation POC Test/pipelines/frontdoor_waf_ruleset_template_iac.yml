@@ -1,0 +1,50 @@
+parameters:
+- name: runImports
+  displayName: Run TF Imports
+  type: boolean
+  default: false
+- name: planOnly
+  displayName: Plan Only
+  type: boolean
+  default: true
+- name: refreshTfState
+  displayName: Refresh Terraform State
+  type: boolean
+  default: true
+
+
+trigger: none
+#  - master
+#  - release/*
+
+stages:
+
+# Build Jobs
+- stage: build
+  displayName: Build
+  jobs:
+  - template: templates/publish_files/publish_files.yml
+    parameters:
+      jobName: publish_iac
+      artifactName: waf_ruleset_template
+      source: tf/waf_ruleset_template
+
+# Zz Deployment
+# - ${{ if eq(parameters.deploySandbox, true) }}:
+- stage: zz
+  displayName: 'Deploy To  ZZ'
+  dependsOn: 
+  - build
+  variables:
+  - template: variables/zz.yml
+  jobs:
+  - template: waf_iac_deployment.yml
+    parameters:
+      environment: Zz
+      environmentTag: Np
+      application: frontdoor-ruleset-template-iac
+      runImports: ${{ parameters.runImports }}
+      planOnly: ${{ parameters.planOnly }}
+      azureServiceConnection: SaaS-Infrastructure-Services_avidxchange_Np_AzDOSC_SP
+      refreshTFState: ${{ parameters.refreshTfState }}
+      iacArtifactName: waf_ruleset_template

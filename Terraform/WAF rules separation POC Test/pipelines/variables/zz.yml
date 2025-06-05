@@ -1,0 +1,9 @@
+variables:
+  azureSubscriptionId: fb7f642a-16cf-48a7-8161-58002441290d
+  azureResourceGroupName: AX-Ae1-Zz-Apim01-RG
+  frontdoorProfileName: ax-Zz-apim-fd
+  frontDoorSku: Premium_AzureFrontDoor
+  capability: APIM
+  capabilityDomain: PlatformEngineering
+  primaryLocation: East US
+  apimInstanceName: AX-Ae1-Zz-Shared01-APIM

@@ -1,0 +1,99 @@
+parameters:
+  environment: ''
+  application: ''
+  capability: ''
+  domain: ''
+  jobName: 'terraform_deploy'
+  azureServiceConnection: ''
+  dependsOn: []
+  azureSubscriptionId: ''
+  iacArtifactName: iac
+  tfFolder: ''
+  tfVariables: {}
+  tfVersion: '0.15.0'
+  tfOrgName: 'avidxchange'
+  tfTeamName: ''
+  runImports: false
+  tfImports: {}
+  planOnly: true
+  uninstall: false
+  refreshTFState: true
+
+jobs:
+- deployment: ${{ parameters.jobName }}
+  ${{ if eq(parameters['uninstall'], 'false') }}:
+    displayName: Deploy IaC ${{ parameters.application }}
+  ${{ if eq(parameters['uninstall'], 'true') }}:
+    displayName: Destroy IaC ${{ parameters.application }}
+  dependsOn: 
+  - ${{ each dep in parameters.dependsOn }}:
+    - ${{ dep }}
+  pool:
+    name: linux-vmss-agent-pool
+  container:
+    image: axglbhubacr.azurecr.io/cicd-devtools:latest
+    endpoint: DefaultDockerRegistry
+    options: '--user root'
+  workspace:
+    clean: all
+  variables:
+    tfWorkingDirectory: $(Pipeline.Workspace)/_tf/${{ parameters.tfFolder }}
+    artifactFolder: $(Pipeline.Workspace)/_tf
+  environment:
+    name: ${{ parameters.environment }}
+  strategy:
+    runOnce:
+      deploy:
+        steps:
+        - checkout: self
+        - download: none
+
+        - task: DownloadPipelineArtifact@2
+          displayName: Download IaC Artifact
+          inputs:
+            artifact: ${{ parameters.iacArtifactName }}
+            path: $(Pipeline.Workspace)/_tf
+
+        - task: PowerShell@2
+          displayName: Install Modules
+          inputs:
+            filePath: "$(Pipeline.Workspace)/s/pipelines/templates/terraform_deployment/Install-Modules.ps1"
+
+        - task: PowerShell@2
+          displayName: Install AvidXchange CICD Powershell Module
+          inputs:
+            filePath: "$(Pipeline.Workspace)/s/pipelines/templates/terraform_deployment/Install-AvidCICDModule.ps1"
+            arguments: -Verbose
+          env:
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+        - task: PowerShell@2
+          displayName: Create tfVars
+          inputs:
+            filePath: "$(Pipeline.Workspace)/s/pipelines/templates/terraform_deployment/Add-TfVars.ps1"
+            arguments: -TFWorkingDirectory "$(tfWorkingDirectory)"
+          env:
+            ${{ each pair in parameters.tfVariables }}:
+              tfVariable_${{ pair.key }}: ${{ pair.value }}
+
+        - task: AzureCLI@2
+          displayName: Run Terraform Deploy
+          inputs:
+            azureSubscription: ${{ parameters.azureServiceConnection }}
+            scriptType: pscore
+            scriptPath: "$(Pipeline.Workspace)/s/pipelines/templates/terraform_deployment/Invoke-Terraform.ps1"
+            addSpnToEnvironment: true
+            arguments: >
+              -SubscriptionId "${{ parameters.azureSubscriptionId }}" 
+              -Environment ${{ parameters.environment }} 
+              -Domain "${{ parameters.domain }}" 
+              -Capability "${{ parameters.capability }}" 
+              -Application "${{ parameters.application }}" 
+              -WorkingDirectory "$(tfWorkingDirectory)/"
+              -RunImports ([bool]::Parse("${{ parameters.runImports }}"))
+              -PlanOnly ([bool]::Parse("${{ parameters.planOnly }}"))
+              -Destroy ([bool]::Parse("${{ parameters.uninstall }}"))
+              -RefreshState ([bool]::Parse("${{ parameters.refreshTFState }}"))
+          env:
+            ${{ each pair in parameters.tfImports }}:
+              tfImport_${{ pair.key }}: ${{ pair.value }}

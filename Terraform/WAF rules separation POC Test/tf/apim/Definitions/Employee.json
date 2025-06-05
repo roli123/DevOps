@@ -1,0 +1,33 @@
+{
+    "properties": {
+        "contentType": "application/json",
+        "document": {
+            "components": {
+                "schemas": {
+                    "Employee": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "format": "int32"
+                            },
+                            "name": {
+                                "type": "string",
+                                "nullable": true
+                            },
+                            "departmentId": {
+                                "type": "integer",
+                                "format": "int32"
+                            },
+                            "salary": {
+                                "type": "number",
+                                "format": "double"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            }
+        }
+    }
+}

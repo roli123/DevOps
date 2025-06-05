@@ -33,7 +33,7 @@ resource "azurerm_storage_account" "storage" {
 
 resource "azurerm_storage_container" "container" {
   name                  = "container1"
-  storage_account_id    = azurerm_storage_account.rg.id
+  storage_account_id    = azurerm_storage_account.storage.id
   container_access_type = "container"
   depends_on = [ azurerm_storage_account.storage ]
 } 

@@ -1,0 +1,32 @@
+parameters:
+  jobName: 'publish_files'
+  artifactName: 'drop'
+  source: ''
+  contents: '**'
+  
+jobs:
+- job: ${{ parameters.jobName }}
+  displayName: Copy and Package ${{ parameters.artifactName }}
+  pool:
+    name: linux-vmss-agent-pool
+  container:
+    image: axglbhubacr.azurecr.io/cicd-devtools:latest
+    endpoint: DefaultDockerRegistry
+    options: '--user root'
+  workspace:
+    clean: all
+
+  steps:
+  - task: CopyFiles@2
+    displayName: 'Copy Files to: $(Pipeline.Workspace)/a'
+    inputs:
+      SourceFolder: ${{ parameters.source }}
+      Contents: '${{ parameters.contents }}'
+      TargetFolder: '$(Pipeline.Workspace)/a'
+      CleanTargetFolder: true
+
+  - task: PublishPipelineArtifact@1
+    displayName: 'Publish Pipeline Artifact'
+    inputs:
+      targetPath: '$(Pipeline.Workspace)/a'
+      artifactName: ${{ parameters.artifactName }}

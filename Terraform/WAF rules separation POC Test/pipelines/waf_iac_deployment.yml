@@ -1,0 +1,61 @@
+parameters:
+- name: environment
+  type: string
+- name: environmentTag
+  type: string
+- name: application
+  type: string
+- name: runImports
+  type: boolean
+- name: planOnly
+  type: boolean
+- name: azureServiceConnection
+  type: string
+- name: iacArtifactName
+  type: string
+- name: refreshTFState
+  type: boolean
+
+jobs:
+- job: GenerateGUID
+  displayName: 'Generate New GUID'
+  steps:
+    - powershell: |
+        $guid = [guid]::NewGuid().ToString()
+        Write-Host "##vso[task.setvariable variable=newGuid;isoutput=true]$guid"
+      name: passGuid
+      displayName: 'Generate GUID'
+- template: templates/terraform_deployment/terraform.yml
+  parameters:
+    dependsOn: ['GenerateGUID']
+    jobName: iac_${{ parameters.environment }}
+    application: ${{ parameters.application }}
+    azureSubscriptionId: $(azureSubscriptionId)
+    iacArtifactName: ${{ parameters.iacArtifactName }}
+    capability: $(capability)
+    environment: ${{ parameters.environment }}
+    domain: $(capabilityDomain) 
+    azureServiceConnection: ${{ parameters.azureServiceConnection }}
+    runImports: ${{ parameters.runImports }}
+    planOnly: ${{ parameters.planOnly }}
+    uninstall: false
+    refreshTFState: ${{ parameters.refreshTFState }}
+    tfImports:
+      azurerm_api_management_identity_provider_aad_dot_aad_access: /subscriptions/$(azureSubscriptionId)/resourceGroups/$(resourceGroupName)/providers/Microsoft.ApiManagement/service/$(apimInstanceName)/identityProviders/aad
+    tfVariables:
+      azure_subscription_id: $(azureSubscriptionId)
+      environment: ${{ parameters.environment }}
+      environment_tag: ${{ parameters.environmentTag }}
+      capability_domain: $(capabilityDomain)
+      azure_resource_group_name: $(azureResourceGroupName)
+      location: $(primaryLocation)
+      apim_instance_name: $(apimInstanceName)
+      frontdoor_profile_name: $(frontdoorProfileName)
+      frontdoor_endpoint_name: $(frontdoorEndpointName)
+      frontdoor_sku: $(frontDoorSku)
+      frontdoor_cert_keyvault_rg_name: $(frontdoorCertKeyvaultRgName)
+      frontdoor_cert_keyvault_name: $(frontdoorCertKeyvaultName)
+      apim_instances_saas_tf_state: 'platformengineering-apim-waf-iac-saas-${{ parameters.environment }}'
+      apim_management_kv_name: $(apimMgmtKvName)
+      apim_management_kv_rg_name: $(apimMgmtResourceGroupName)
+      

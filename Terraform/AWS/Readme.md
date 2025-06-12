@@ -1,58 +1,65 @@
+## 📄 **Terraform Document: Launch EC2 Instance on AWS**
 
-## 📄 **Terraform Document: Launching AWS EC2 Instance**
-
+---
 
 ### ✅ **Step 1: Create an IAM User (If Not Already Created)**
 
-1. Log in to **AWS Console**.
+1. Log in to the **AWS Console**.
 2. Navigate to **IAM** service.
-3. On the left sidebar, click **Users**.
+3. In the left sidebar, click **Users**.
 4. Click **Add users**:
 
-   * **User name**: (e.g., `terraform-user`)
+   * Enter a **username** (e.g., `terraform-user`)
    * Click **Next**
 5. Set permissions:
 
    * Choose **Attach policies directly**
-   * Search and select **AdministratorAccess** (for full permissions)
-   * Click **Next** and then **Create user**
+   * Search for **AdministratorAccess**
+   * Select it and click **Next**
+6. Click **Create user**
 
 ---
 
-### 🔐 **Step 2: Create Access Key**
+### 🔐 **Step 2: Create Access Key for the User**
 
-1. After creating the user, click on the username.
+1. Click on the IAM user you just created.
 2. Go to the **Security credentials** tab.
 3. Click **Create access key**.
-4. Choose **Command Line Interface (CLI)**, then **Next**.
+4. Choose **Command Line Interface (CLI)**, then click **Next**.
 5. Confirm and click **Create access key**.
-6. **Copy the Access Key and Secret Key**.
+6. **Copy and save** the **Access Key ID** and **Secret Access Key**.
 
 ---
 
-### 📁 **Step 3: Create Terraform Configuration**
+### 📁 **Step 3: Set Up Terraform Configuration**
 
-1. Create a directory for your Terraform project:
+#### 🧭 Where to Copy Terraform Code From
 
-   ```bash
-   mkdir terraform-ec2
-   cd terraform-ec2
-   touch main.tf
-   ```
+1. Go to the [Terraform Registry](https://registry.terraform.io/).
+2. Click on **Browse Providers** > Select **AWS**.
+3. Click **Use Provider** – copy the **provider block** into your `main.tf` file.
+4. Scroll to the **Authentication** section of the AWS provider documentation.
+5. Copy the version that uses `access_key` and `secret_key`.
 
-2. Open `main.tf` and add the following configuration:
+---
+
+### 🧾 **main.tf Example File**
+
+Create a file named `main.tf` and paste the following:
 
 ```hcl
-# main.tf
-
+# Use the provider block from Terraform Registry's AWS Provider page
 provider "aws" {
-  region     = "us-east-1" # Change as needed
+  region     = "us-east-1" # or your preferred region
   access_key = "YOUR_ACCESS_KEY"
   secret_key = "YOUR_SECRET_KEY"
 }
 
+# Search for aws_instance on Terraform Registry and copy the sample resource block
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance
+
 resource "aws_instance" "example" {
-  ami           = "ami-0c55b159cbfafe1f0" # Amazon Linux 2 AMI (change based on region)
+  ami           = "ami-0c55b159cbfafe1f0" # Example: Amazon Linux 2 AMI (update for your region)
   instance_type = "t2.micro"
 
   tags = {
@@ -61,37 +68,24 @@ resource "aws_instance" "example" {
 }
 ```
 
-> 🔒 **Note**: Avoid hardcoding credentials in production. Use environment variables or AWS credentials file for security.
+> 🔍 Get latest AMI ID from AWS EC2 Console by manually starting to launch a new instance and copying the AMI ID.
 
 ---
 
-### ⚙️ **Step 4: Initialize and Deploy Terraform**
+### ⚙️ **Step 4: Run Terraform Commands**
 
-Run the following commands in your terminal:
+Run these commands in the terminal from the directory where `main.tf` is located:
 
 ```bash
-# Initialize Terraform
-terraform init
-
-# Validate the configuration
-terraform validate
-
-# Create an execution plan
-terraform plan -out plan.out
-
-# Apply the plan
-terraform apply plan.out
-
-# To destroy the resources
-terraform destroy
+terraform init           # Initializes the project
+terraform validate       # Checks for syntax errors
+terraform plan -out plan.out  # Prepares the execution plan
+terraform apply plan.out      # Applies the plan and launches EC2
+terraform destroy        # Tears down the infrastructure
 ```
 
 ---
 
-### 📝 **Extra Tips**
+### 🛡️ **Security Tip**
 
-* To find the latest AMI ID:
-
-  * Go to AWS EC2 Console → Launch Instance → Choose an AMI → Copy its ID
-* Keep your access keys secure.
-* Use `terraform output` if you want to view instance details after creation.
+Avoid hardcoding credentials in `main.tf`. Use environment variables or an AWS credentials file (`~/.aws/credentials`) in production.
